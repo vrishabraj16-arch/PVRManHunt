@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MANHUNT — Real-Life Hide &amp; Seek</title>
+<style>
+/* ── Design tokens ─────────────────────────────────────────────────────── */
+:root {
+  --bg:#0b1020; --panel:#131b30; --panel2:#19243d; --line:#293654;
+  --text:#f2f5ff; --muted:#a3b0cc;
+  --green:#a6f36b; --orange:#ffbd69; --red:#ff737d; --blue:#38bdf8;
+}
+
+/* ── Reset / base ──────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at top,#172543 0,var(--bg) 55%);
+  color: var(--text);
+  font: 15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Layout ────────────────────────────────────────────────────────────── */
+.wrap { max-width: 520px; width: 100%; margin: auto; padding: 32px 18px 60px; }
+.top  { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 28px; }
+
+/* ── Branding ──────────────────────────────────────────────────────────── */
+.brand { font-weight: 900; letter-spacing: .17em; font-size: 14px; }
+.brand span { color: var(--green); }
+.badge { border: 1px solid var(--line); padding: 6px 10px; border-radius: 99px; color: var(--muted); font-size: 12px; }
+
+/* ── Hero ──────────────────────────────────────────────────────────────── */
+.hero { margin: 18px 0 24px; }
+.eyebrow { color: var(--green); font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.hero h1 { font-size: clamp(34px,6vw,52px); line-height: 1.02; letter-spacing: -.045em; margin: 8px 0 12px; }
+.hero p  { color: var(--muted); margin: 0; }
+
+/* ── Card ──────────────────────────────────────────────────────────────── */
+.card {
+  background: linear-gradient(150deg,rgba(25,36,61,.96),rgba(16,24,43,.96));
+  border: 1px solid var(--line); border-radius: 20px;
+  padding: 20px; box-shadow: 0 18px 45px #0002;
+}
+.card h2 { font-size: 17px; margin: 0 0 16px; }
+
+/* ── Forms ─────────────────────────────────────────────────────────────── */
+.row   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { margin-bottom: 13px; }
+.field label { display: block; color: var(--muted); font-size: 12px; margin: 0 0 6px; }
+.field input {
+  width: 100%; background: #0c1427; border: 1px solid #31405f;
+  color: var(--text); padding: 12px; border-radius: 10px; outline: none;
+}
+.field input:focus { border-color: var(--green); }
+
+/* ── Team choice ───────────────────────────────────────────────────────── */
+.team-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.team { border: 1px solid var(--line); background: #0c1427; border-radius: 12px; padding: 12px; cursor: pointer; text-align: left; color: var(--text); }
+.team strong { display: block; }
+.team small  { color: var(--muted); }
+.team.active        { border-color: var(--green);  box-shadow: inset 0 0 0 1px var(--green);  background: #1a2b2a; }
+.team.active.seeker { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); background: #30271d; }
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+button {
+  border: 0; border-radius: 11px; padding: 12px 15px; font-weight: 800;
+  cursor: pointer; background: var(--green); color: #10170b;
+  transition: transform .12s, opacity .12s;
+}
+button:hover    { transform: translateY(-1px); }
+button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.secondary { background: #263553; color: var(--text); border: 1px solid #3a4b6b; }
+.actions   { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── Utility ───────────────────────────────────────────────────────────── */
+.tiny    { font-size: 12px; color: var(--muted); }
+.notice  { padding: 11px 12px; border-radius: 10px; background: #0d172b; border: 1px solid var(--line); color: var(--muted); font-size: 12px; margin-top: 12px; }
+.hidden  { display: none !important; }
+.footer  { margin-top: 18px; text-align: center; color: #7584a3; font-size: 11px; }
+
+/* ── Error message ─────────────────────────────────────────────────────── */
+.error-msg { background: #38171f; border: 1px solid #7b3443; color: #ffd9dd; border-radius: 10px; padding: 10px 12px; font-size: 13px; margin-top: 10px; }
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 540px) {
+  .row { grid-template-columns: 1fr; }
+  .top  { margin-bottom: 16px; }
+  .hero { margin-top: 8px; }
+  .card { padding: 16px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── Top bar ──────────────────────────────────────────────────────────── -->
+  <div class="top">
+    <div class="brand">◉ <span>MAN</span>HUNT</div>
+    <div class="badge">REAL-WORLD GAME · BETA</div>
+  </div>
+
+  <!-- ── Hero ─────────────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="eyebrow">Hide. Move. Don't get caught.</div>
+    <h1>Make the whole<br>world your arena.</h1>
+    <p>Create a private room, split into hiders and seekers, track locations on the live map, and use secret codes to confirm catches.</p>
+  </section>
+
+  <!-- ── Join card ─────────────────────────────────────────────────────────── -->
+  <section class="card" id="setupCard">
+    <h2>01 / Join your game</h2>
+    <div class="row">
+      <div class="field">
+        <label for="username">YOUR USERNAME</label>
+        <input id="username" maxlength="24" placeholder="e.g. NightFox" autocomplete="nickname">
+      </div>
+      <div class="field">
+        <label for="room">ROOM ID</label>
+        <input id="room" maxlength="12" placeholder="e.g. PARK42" style="text-transform:uppercase">
+      </div>
+    </div>
+
+    <label class="tiny">CHOOSE YOUR TEAM</label>
+    <div class="team-choice">
+      <button class="team active" id="hiderChoice" type="button">
+        <strong>🫥 Hiders</strong>
+        <small>Stay unseen. Move smart.</small>
+      </button>
+      <button class="team seeker" id="seekerChoice" type="button">
+        <strong>🔎 Seekers</strong>
+        <small>Track pings &amp; catch hiders.</small>
+      </button>
+    </div>
+
+    <div class="actions">
+      <button id="joinBtn">Join room →</button>
+      <button class="secondary" id="randomBtn" type="button">Random room ID</button>
+    </div>
+
+    <div id="errorMsg" class="error-msg hidden"></div>
+    <div class="notice">Everyone must use the same Room ID. Refresh the game page to reconnect within 5 minutes.</div>
+  </section>
+
+  <div class="footer">Use only with consent. Play in a safe, permitted area.</div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(() => {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  let selectedTeam = "hiders";
+
+  // ── PersistentId (for session reconnection) ───────────────────────────────
+  function getOrCreatePersistentId() {
+    const key = "manhunt_pid";
+    let id = "";
+    try {
+      id = localStorage.getItem(key) || "";
+      if (!id) {
+        id = "pid_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
+        localStorage.setItem(key, id);
+      }
+    } catch {
+      id = "pid_" + Math.random().toString(36).slice(2, 10);
+    }
+    return id;
+  }
+
+  function getOrCreateDeviceId() {
+    const key = "manhunt_device_id";
+    let id = "";
+    try {
+      id = localStorage.getItem(key) || "";
+      if (!id) {
+        id = "dev_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
+        localStorage.setItem(key, id);
+      }
+    } catch {
+      id = "dev_" + Math.random().toString(36).slice(2, 10);
+    }
+    return id;
+  }
+
+  // ── URL pre-fill (shareable link) ─────────────────────────────────────────
+  (function applyUrlParams() {
+    const params   = new URLSearchParams(window.location.search);
+    const roomParam = params.get("room");
+    if (roomParam) {
+      $("room").value = roomParam.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 12);
+    }
+  })();
+
+  // ── Team selection ────────────────────────────────────────────────────────
+  function selectTeam(t) {
+    selectedTeam = t;
+    $("hiderChoice").classList.toggle("active", t === "hiders");
+    $("seekerChoice").classList.toggle("active", t === "seekers");
+  }
+  $("hiderChoice").onclick = () => selectTeam("hiders");
+  $("seekerChoice").onclick = () => selectTeam("seekers");
+
+  // ── Random room ID ────────────────────────────────────────────────────────
+  $("randomBtn").onclick = () => {
+    const code = "HUNT" + Math.random().toString(36).slice(2, 6).toUpperCase();
+    $("room").value = code;
+    history.replaceState(null, "", `?room=${encodeURIComponent(code)}`);
+  };
+
+  $("room").addEventListener("input", e => {
+    const cleaned = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 12);
+    e.target.value = cleaned;
+    if (cleaned.length >= 3) {
+      history.replaceState(null, "", `?room=${encodeURIComponent(cleaned)}`);
+    } else if (!cleaned) {
+      history.replaceState(null, "", location.pathname);
+    }
+  });
+
+  // ── Error display ─────────────────────────────────────────────────────────
+  function showError(msg) {
+    const el = $("errorMsg");
+    el.textContent = msg;
+    el.classList.remove("hidden");
+  }
+  function clearError() {
+    $("errorMsg").classList.add("hidden");
+    $("errorMsg").textContent = "";
+  }
+
+  // ── Socket ────────────────────────────────────────────────────────────────
+  const socket = io();
+
+  // ── Join room ─────────────────────────────────────────────────────────────
+  function joinRoom() {
+    clearError();
+    const username     = $("username").value.trim();
+    const room         = $("room").value.trim().toUpperCase();
+    const persistentId = getOrCreatePersistentId();
+    const deviceId     = getOrCreateDeviceId();
+
+    if (!username || !room) return showError("Enter a username and room ID.");
+
+    $("joinBtn").disabled = true;
+
+    socket.emit("join-room", { username, room, team: selectedTeam, deviceId, persistentId }, res => {
+      $("joinBtn").disabled = false;
+
+      if (!res?.ok) {
+        return showError(res?.error || "Could not join room.");
+      }
+
+      // Save session info to localStorage for game.html to pick up
+      try {
+        localStorage.setItem("manhunt_username", username);
+        localStorage.setItem("manhunt_room", room);
+        localStorage.setItem("manhunt_team", selectedTeam);
+        localStorage.setItem("manhunt_catch_code", res.catchCode || "");
+        localStorage.setItem("manhunt_player_id", res.playerId || "");
+      } catch {}
+
+      // Redirect to game page
+      window.location.href = `game.html?room=${encodeURIComponent(room)}`;
+    });
+  }
+
+  $("joinBtn").onclick = joinRoom;
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && document.activeElement !== $("joinBtn")) joinRoom();
+  });
+
+})();
+</script>
+</body>
+</html>
